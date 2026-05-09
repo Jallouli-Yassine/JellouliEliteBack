@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.jallouli.elite.modules.auth.dto.AuthResponse;
 import tn.jallouli.elite.modules.auth.dto.LoginRequest;
+import tn.jallouli.elite.modules.auth.dto.RegisterRequest;
 import tn.jallouli.elite.modules.auth.service.AuthInterface;
 
 @RestController
@@ -26,9 +27,16 @@ public class AuthController {
     public void createDefaultAdminAccount(){
         authInterface.createDefaultAdminAccount();
     }
+
     @PostMapping("login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginDTO){
         AuthResponse response = authInterface.login(loginDTO);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("register")
+    public ResponseEntity<Void> register(@RequestBody RegisterRequest newUser){
+        authInterface.register(newUser);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

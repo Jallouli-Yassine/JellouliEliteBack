@@ -7,6 +7,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import tn.jallouli.elite.exception.BusinessException;
+import tn.jallouli.elite.exception.ResourceNotFoundException;
 import tn.jallouli.elite.modules._UserRole.Repository.RoleRepo;
 import tn.jallouli.elite.modules._UserRole.entity.RoleEntity;
 import tn.jallouli.elite.modules._user.entity.RoleName;
@@ -14,6 +16,7 @@ import tn.jallouli.elite.modules._user.entity.UserEntity;
 import tn.jallouli.elite.modules._user.repository.UserRepository;
 import tn.jallouli.elite.modules.auth.dto.AuthResponse;
 import tn.jallouli.elite.modules.auth.dto.LoginRequest;
+import tn.jallouli.elite.modules.auth.dto.RegisterRequest;
 import tn.jallouli.elite.modules.auth.service.AuthInterface;
 import tn.jallouli.elite.security.JWTGenerator;
 
@@ -84,6 +87,30 @@ public class AuthServiceImpl implements AuthInterface {
 				newAdmin.setRole(adminRole);
 				userRepo.save(newAdmin);
 			}
+		}
+	}
+
+	@Override
+	public void register(RegisterRequest newUser) {
+		if (userRepo.existsByEmail(newUser.getEmail())) {
+			throw new BusinessException("Email already in use");
+		}
+		UserEntity userEntity = new UserEntity();
+		userEntity.setFirstName(newUser.getFirstName());
+		userEntity.setLastName(newUser.getLastName());
+		userEntity.setEmail(newUser.getEmail());
+		userEntity.setPhone(newUser.getPhone());
+		userEntity.setPassword(passwordEncoder.encode(newUser.getPassword()));
+		RoleEntity userRole = roleRepo.findByRoleName(newUser.getRoleName());
+		if (userRole == null) {
+			RoleEntity newRole = new RoleEntity();
+			newRole.setRoleName(newUser.getRoleName());
+			roleRepo.save(newRole);
+			userEntity.setRole(newRole);
+			userRepo.save(userEntity);
+		} else {
+			userEntity.setRole(userRole);
+			userRepo.save(userEntity);
 		}
 	}
 }

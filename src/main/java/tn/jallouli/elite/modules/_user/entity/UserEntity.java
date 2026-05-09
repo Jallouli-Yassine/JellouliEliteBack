@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import tn.jallouli.elite.modules._UserRole.entity.RoleEntity;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -33,6 +35,10 @@ public class UserEntity {
 
     @ManyToOne
     private RoleEntity role;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime updatedAt;
 
 
 
