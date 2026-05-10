@@ -14,11 +14,13 @@ import tn.jallouli.elite.modules._UserRole.entity.RoleEntity;
 import tn.jallouli.elite.modules._user.entity.RoleName;
 import tn.jallouli.elite.modules._user.entity.UserEntity;
 import tn.jallouli.elite.modules._user.repository.UserRepository;
-import tn.jallouli.elite.modules.auth.dto.AuthResponse;
-import tn.jallouli.elite.modules.auth.dto.LoginRequest;
-import tn.jallouli.elite.modules.auth.dto.RegisterRequest;
+import tn.jallouli.elite.modules._user.service.email.EmailService;
+import tn.jallouli.elite.modules.auth.dto.*;
 import tn.jallouli.elite.modules.auth.service.AuthInterface;
 import tn.jallouli.elite.security.JWTGenerator;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthInterface {
@@ -27,6 +29,7 @@ public class AuthServiceImpl implements AuthInterface {
 	private final PasswordEncoder passwordEncoder;
 	private final JWTGenerator jwtGenerator;
 	private final RoleRepo roleRepo;
+	private final EmailService emailService;
 
 	@Value("${app.bootstrap.admin.username:admin}")
 	private String adminUsername;
@@ -46,13 +49,14 @@ public class AuthServiceImpl implements AuthInterface {
 	@Value("${app.bootstrap.admin.last-name:Demo}")
 	private String adminLastName;
 
-	public AuthServiceImpl(AuthenticationManager authenticationManager, UserRepository userRepo, PasswordEncoder passwordEncoder, JWTGenerator jwtGenerator, RoleRepo roleRepo) {
+	public AuthServiceImpl(AuthenticationManager authenticationManager, UserRepository userRepo, PasswordEncoder passwordEncoder, JWTGenerator jwtGenerator, RoleRepo roleRepo, EmailService emailService) {
 		this.authenticationManager = authenticationManager;
 		this.userRepo = userRepo;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtGenerator = jwtGenerator;
 		this.roleRepo = roleRepo;
-	}
+        this.emailService = emailService;
+    }
 
 	@Override
 	public AuthResponse login(LoginRequest loginDTO) {
@@ -112,5 +116,48 @@ public class AuthServiceImpl implements AuthInterface {
 			userEntity.setRole(userRole);
 			userRepo.save(userEntity);
 		}
+		emailService.sendWelcomeEmail(newUser.getEmail(), newUser.getFirstName());
+	}
+
+	@Override
+	public void forgotPassword(ForgotPasswordRequest request) {
+		// 1. Chercher l'utilisateur par email
+		UserEntity user = userRepo.findByEmail(request.getEmail())
+				.orElseThrow(() -> new ResourceNotFoundException("Aucun compte avec cet email."));
+
+		// 2. Générer un token unique et sa date d'expiration (ex: valable 30 minutes)
+		String token = UUID.randomUUID().toString();
+		user.setResetPasswordToken(token);
+		user.setResetPasswordTokenExpiry(LocalDateTime.now().plusMinutes(30));
+
+		userRepo.save(user);
+
+		// 3. Construire le lien de réinitialisation (Ceci doit pointer vers votre front-end : Angular / React)
+		String frontendUrl = "http://localhost:4200";
+		String resetUrl = frontendUrl + "/reset-password?token=" + token;
+
+		// 4. Envoyer l'email avec la fonction que vous avez préparée
+		emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), resetUrl);
+	}
+
+	@Override
+	public void resetPassword(ResetPasswordRequest request) {
+		// 1. Chercher l'utilisateur avec ce token
+		UserEntity user = userRepo.findByResetPasswordToken(request.getToken())
+				.orElseThrow(() -> new BusinessException("Token invalide ou introuvable."));
+
+		// 2. Vérifier si le token est expiré
+		if (user.getResetPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+			throw new BusinessException("Le token a expiré. Veuillez refaire une demande.");
+		}
+
+		// 3. Mettre à jour le mot de passe et réinitialiser les champs du token
+		user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+		user.setResetPasswordToken(null);
+		user.setResetPasswordTokenExpiry(null);
+		userRepo.save(user);
+
+		// 4. Envoyer l'email de succès
+		emailService.sendPasswordUpdateSuccessEmail(user.getEmail(), user.getFirstName());
 	}
 }

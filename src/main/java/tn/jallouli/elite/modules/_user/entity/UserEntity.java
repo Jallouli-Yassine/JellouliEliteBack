@@ -31,10 +31,17 @@ public class UserEntity {
 
     private String password;
 
+    @Column(unique = true ,nullable = false)
     private String username;
 
     @ManyToOne
     private RoleEntity role;
+
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
+
+    @Column(name = "reset_password_token_expiry")
+    private LocalDateTime resetPasswordTokenExpiry;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
