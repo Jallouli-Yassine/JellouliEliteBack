@@ -25,6 +25,10 @@ public class UserController {
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         return ResponseEntity.of(userInterface.getAllUsers());
     }
+    @GetMapping("/getMe/{email}")
+    public ResponseEntity<UserEntity> getUserByEmail(@PathVariable String email) {
+        return ResponseEntity.of(userInterface.getUserByEmail(email));
+    }
 
     @PostMapping("/{id}/image")
     public ResponseEntity<Map<String, String>> uploadImage(

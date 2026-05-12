@@ -38,11 +38,11 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthEntryPoint)
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                 )
-                .sessionManagement(s-> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                );
+                .sessionManagement(s-> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/auth/**").permitAll()
+//                        .anyRequest().authenticated()
+//                );
         http.addFilterBefore(new JWTAuthenticationFilter(jwtGenerator, userDetailsService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

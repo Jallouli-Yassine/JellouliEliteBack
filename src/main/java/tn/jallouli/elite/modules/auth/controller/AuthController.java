@@ -23,10 +23,13 @@ public class AuthController {
 
 
     //execute lorsque lapp se lance pour creer les roles dans la base de données
-
     @PostConstruct
     public void createDefaultAdminAccount(){
         authInterface.createDefaultAdminAccount();
+    }
+    @PostConstruct
+    public void createRoles(){
+        authInterface.createRoles();
     }
 
     @PostMapping("login")

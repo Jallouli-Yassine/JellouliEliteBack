@@ -1,5 +1,6 @@
 package tn.jallouli.elite.modules.auth.service.impl;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -71,6 +72,7 @@ public class AuthServiceImpl implements AuthInterface {
 	}
 
 	@Override
+	@Transactional
 	public void createDefaultAdminAccount() {
 		if (!userRepo.existsByUsername(adminUsername)) {
 			UserEntity newAdmin = new UserEntity();
@@ -85,41 +87,52 @@ public class AuthServiceImpl implements AuthInterface {
 				RoleEntity newRole = new RoleEntity();
 				newRole.setRoleName(RoleName.ADMIN);
 				roleRepo.save(newRole);
-				newAdmin.setRole(newRole);
+				newAdmin.getRoles().add(newRole);
 				userRepo.save(newAdmin);
 			} else {
-				newAdmin.setRole(adminRole);
+				newAdmin.getRoles().add(adminRole);
 				userRepo.save(newAdmin);
 			}
 		}
 	}
 
 	@Override
+	@Transactional
 	public void register(RegisterRequest newUser) {
 		if (userRepo.existsByEmail(newUser.getEmail())) {
 			throw new BusinessException("Email already in use");
 		}
+
 		UserEntity userEntity = new UserEntity();
 		userEntity.setFirstName(newUser.getFirstName());
 		userEntity.setLastName(newUser.getLastName());
+
+		// Sécurité: Si le username est vide dans la requête, on utilise l'email
+		userEntity.setUsername(newUser.getUsername());
 		userEntity.setEmail(newUser.getEmail());
 		userEntity.setPhone(newUser.getPhone());
 		userEntity.setPassword(passwordEncoder.encode(newUser.getPassword()));
-		RoleEntity userRole = roleRepo.findByRoleName(newUser.getRoleName());
+
+		// Rôle par défaut générique
+		RoleName targetRole = newUser.getRoleName() != null ? newUser.getRoleName() : RoleName.STUDENT;
+		RoleEntity userRole = roleRepo.findByRoleName(targetRole);
+
 		if (userRole == null) {
-			RoleEntity newRole = new RoleEntity();
-			newRole.setRoleName(newUser.getRoleName());
-			roleRepo.save(newRole);
-			userEntity.setRole(newRole);
-			userRepo.save(userEntity);
-		} else {
-			userEntity.setRole(userRole);
-			userRepo.save(userEntity);
+			userRole = new RoleEntity();
+			userRole.setRoleName(targetRole);
+			roleRepo.save(userRole);
 		}
+
+		// On lie le rôle une seule fois
+		userEntity.getRoles().add(userRole);
+		// On sauvegarde l'utilisateur une seule fois à la fin !
+		userRepo.save(userEntity);
+
 		emailService.sendWelcomeEmail(newUser.getEmail(), newUser.getFirstName());
 	}
 
 	@Override
+	@Transactional
 	public void forgotPassword(ForgotPasswordRequest request) {
 		// 1. Chercher l'utilisateur par email
 		UserEntity user = userRepo.findByEmail(request.getEmail())
@@ -141,6 +154,7 @@ public class AuthServiceImpl implements AuthInterface {
 	}
 
 	@Override
+	@Transactional
 	public void resetPassword(ResetPasswordRequest request) {
 		// 1. Chercher l'utilisateur avec ce token
 		UserEntity user = userRepo.findByResetPasswordToken(request.getToken())
@@ -159,5 +173,19 @@ public class AuthServiceImpl implements AuthInterface {
 
 		// 4. Envoyer l'email de succès
 		emailService.sendPasswordUpdateSuccessEmail(user.getEmail(), user.getFirstName());
+	}
+
+
+	// 2. Boucle au lieu de copier-coller = Code plus propre
+	@Override
+	@Transactional
+	public void createRoles() {
+		for (RoleName roleName : RoleName.values()) {
+			if (!roleRepo.existsByRoleName(roleName)) {
+				RoleEntity role = new RoleEntity();
+				role.setRoleName(roleName);
+				roleRepo.save(role);
+			}
+		}
 	}
 }

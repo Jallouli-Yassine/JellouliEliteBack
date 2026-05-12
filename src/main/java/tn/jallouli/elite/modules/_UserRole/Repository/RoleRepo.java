@@ -7,4 +7,5 @@ import tn.jallouli.elite.modules._user.entity.RoleName;
 public interface RoleRepo extends JpaRepository<RoleEntity,Long> {
     RoleEntity findByRoleName(RoleName roleName);
 
+    boolean existsByRoleName(RoleName roleName);
 }

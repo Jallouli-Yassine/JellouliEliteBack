@@ -15,6 +15,7 @@ import tn.jallouli.elite.modules._user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 //2
 /* filtrage al user w token testhak jwt */
@@ -29,12 +30,26 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity u = userRepo.findByEmail(username).orElseThrow(()-> new UsernameNotFoundException("User not found with email: " + username));
-        return new User(u.getEmail(), u.getPassword(), mapRolesToAuthorities(u.getRole()));
+        return new User(u.getEmail(), u.getPassword(), mapRolesToAuthorities(u.getRoles()));
     }
 
-    private Collection<GrantedAuthority> mapRolesToAuthorities(RoleEntity userRole) {
+    private Collection<GrantedAuthority> mapRolesToAuthorities(Set<RoleEntity> roles) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + userRole.getRoleName().name()));
+
+        // S'assurer que la liste n'est pas nulle pour éviter une NullPointerException
+        if (roles != null) {
+            for (RoleEntity role : roles) {
+                if (role.getRoleName() != null) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName().name()));
+                }
+            }
+        }
+
+        // Si l'utilisateur n'a aucun rôle, on peut lui donner un rôle par défaut si on veut
+        if (authorities.isEmpty()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
+        }
+
         return authorities;
     }
 }

@@ -28,6 +28,13 @@ public class UserServiceImpl implements UserInterface {
         return Optional.of(userRepository.findAll());
     }
 
+    @Override
+    public Optional<UserEntity> getUserByEmail(String email) {
+         UserEntity u = userRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("User not found with email: " + email));
+            return Optional.of(u);
+    }
+
+
     // N'oubliez pas le private final CloudinaryService cloudinaryService; dans le constructeur
 
     @Override

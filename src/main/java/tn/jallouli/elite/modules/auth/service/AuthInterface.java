@@ -9,5 +9,6 @@ public interface AuthInterface {
     void register(RegisterRequest newUser);
     void forgotPassword(ForgotPasswordRequest request);
     void resetPassword(ResetPasswordRequest request);
+    void createRoles();
 }
 

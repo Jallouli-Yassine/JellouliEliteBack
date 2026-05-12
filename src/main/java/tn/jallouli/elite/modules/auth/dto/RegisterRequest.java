@@ -7,6 +7,7 @@ import tn.jallouli.elite.modules._user.entity.RoleName;
 public class RegisterRequest {
     private String firstName;
     private String lastName;
+    private String username;
     private String phone;
     private String email;
     private String password;
