@@ -7,9 +7,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import tn.jallouli.elite.modules._UserRole.entity.RoleEntity;
-import tn.jallouli.elite.modules._user.entity.UserEntity;
-import tn.jallouli.elite.modules._user.repository.UserRepository;
+import tn.jallouli.elite.modules.userRole.entity.RoleEntity;
+import tn.jallouli.elite.modules.user.entity.UserEntity;
+import tn.jallouli.elite.modules.user.repository.UserRepository;
 
 
 import java.util.ArrayList;

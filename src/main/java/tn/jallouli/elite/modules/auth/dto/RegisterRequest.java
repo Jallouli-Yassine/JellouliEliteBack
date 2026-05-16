@@ -1,7 +1,7 @@
 package tn.jallouli.elite.modules.auth.dto;
 
 import lombok.Data;
-import tn.jallouli.elite.modules._user.entity.RoleName;
+import tn.jallouli.elite.modules.user.entity.RoleName;
 
 @Data
 public class RegisterRequest {
