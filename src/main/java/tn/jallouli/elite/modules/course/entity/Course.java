@@ -3,7 +3,6 @@ package tn.jallouli.elite.modules.course.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import tn.jallouli.elite.modules.enrollment.entity.Enrollment;
 import tn.jallouli.elite.modules.payment.entity.Payment;
 import tn.jallouli.elite.modules.sections.entity.Section;

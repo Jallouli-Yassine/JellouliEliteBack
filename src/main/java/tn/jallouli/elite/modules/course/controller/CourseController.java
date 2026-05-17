@@ -1,15 +1,39 @@
 package tn.jallouli.elite.modules.course.controller;
 
+import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.jallouli.elite.exception.BusinessException;
 import tn.jallouli.elite.exception.ResourceNotFoundException;
+import tn.jallouli.elite.modules.course.dto.CourseRequest;
+import tn.jallouli.elite.modules.course.service.CourseInterface;
 
 @RestController
 @RequestMapping("/courses")
 public class CourseController {
 
+    private final CourseInterface courseInterface;
+
+    public CourseController(CourseInterface courseInterface) {
+        this.courseInterface = courseInterface;
+    }
+
     // ==== EXEMPLE TRÈS SIMPLE POUR TON E-LEARNING ====
+
+    @Transactional
+    @PostMapping("/add/{instructorID}")
+    public ResponseEntity<String> addCourse(@RequestBody CourseRequest courseRequest, @PathVariable Long instructorID) {
+
+        courseInterface.createCourse(instructorID, courseRequest);
+
+        return ResponseEntity.ok("Le cours a été créé avec succès !");
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteCourse(@PathVariable Long id) {
+        courseInterface.deleteCourse(id);
+        return ResponseEntity.ok("Le cours a été supprimé avec succès !");
+    }
 
     // 1. Gérer un cours introuvable
     @GetMapping("/{id}")

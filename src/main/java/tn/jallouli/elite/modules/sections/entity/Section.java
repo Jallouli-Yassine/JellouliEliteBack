@@ -3,10 +3,10 @@ package tn.jallouli.elite.modules.sections.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import tn.jallouli.elite.modules.course.entity.Course;
 import tn.jallouli.elite.modules.lesson.entity.Lesson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,5 +26,5 @@ public class Section {
     private Course course;
 
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Lesson> lessons;
+    private List<Lesson> lessons = new ArrayList<>();
 }
