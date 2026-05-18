@@ -3,6 +3,7 @@ package tn.jallouli.elite.modules.course.dto;
 import lombok.Getter;
 import tn.jallouli.elite.modules.sections.dto.SectionRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -18,5 +19,5 @@ public class CourseRequest {
     private String published;
 
 
-    private List<SectionRequest> sections;
+    private List<SectionRequest> sections = new ArrayList<>();
 }

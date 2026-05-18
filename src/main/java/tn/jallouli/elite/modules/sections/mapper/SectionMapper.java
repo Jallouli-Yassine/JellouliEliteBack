@@ -13,6 +13,5 @@ public class SectionMapper {
         section.setDescription(sectionRequest.getDescription());
         section.setPosition(sectionRequest.getPosition());
         return section;
-
     }
 }

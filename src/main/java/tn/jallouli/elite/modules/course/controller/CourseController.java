@@ -29,6 +29,12 @@ public class CourseController {
         return ResponseEntity.ok("Le cours a été créé avec succès !");
     }
 
+    @PutMapping("/update/{idCourse}")
+    public ResponseEntity<String> updateCourse(@PathVariable Long idCourse, @RequestBody CourseRequest courseRequest) {
+        courseInterface.updateCourse(idCourse, courseRequest);
+        return ResponseEntity.ok("Le cours a été mis à jour avec succès !");
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteCourse(@PathVariable Long id) {
         courseInterface.deleteCourse(id);

@@ -10,5 +10,5 @@ public class LessonRequest {
     private String videoUrl;
     private String duration;
     private boolean preview;
-    private int position;
+    private Integer position;
 }

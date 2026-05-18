@@ -1,5 +1,6 @@
 package tn.jallouli.elite.modules.sections.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.jallouli.elite.exception.ResourceNotFoundException;
@@ -26,11 +27,13 @@ public class SectionService implements SectionInterface {
     public void createSection(SectionRequest sectionRequest, Long idCourse) {
         Course c = courseRepo.findById(idCourse).orElseThrow(()-> new ResourceNotFoundException("Course not found with id: " + idCourse));
         Section s =  sectionMapper.toEntity(sectionRequest);
-        for(LessonRequest lessonRequest : sectionRequest.getLessons() ){
-           Lesson l = lessonMapper.toEntity(lessonRequest);
-           l.setSection(s);
-           s.getLessons().add(l);
-       }
+        if(sectionRequest.getLessons() != null && !sectionRequest.getLessons().isEmpty()){
+            for(LessonRequest lessonRequest : sectionRequest.getLessons() ){
+                Lesson l = lessonMapper.toEntity(lessonRequest);
+                l.setSection(s);
+                s.getLessons().add(l);
+            }
+        }
         s.setCourse(c);
         sectionRepo.save(s);
 
@@ -38,11 +41,19 @@ public class SectionService implements SectionInterface {
 
     @Override
     public void updateSection(Long idSection, SectionRequest sectionRequest) {
-
+        Section existingSection = sectionRepo.findById(idSection).orElseThrow(()-> new ResourceNotFoundException("Section not found with id: " + idSection));
+        if(sectionRequest.getTitle() != null) existingSection.setTitle(sectionRequest.getTitle());
+        if(sectionRequest.getDescription() != null) existingSection.setDescription(sectionRequest.getDescription());
+        if(sectionRequest.getPosition() != null) existingSection.setPosition(sectionRequest.getPosition());
+        sectionRepo.save(existingSection);
     }
 
     @Override
     public void deleteSection(Long idSection) {
-
+        if(sectionRepo.findById(idSection).isPresent()){
+             sectionRepo.deleteById(idSection);
+         }else{
+             throw new ResourceNotFoundException("Section not found with id: " + idSection);
+         }
     }
 }

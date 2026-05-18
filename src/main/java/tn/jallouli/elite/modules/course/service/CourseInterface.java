@@ -7,7 +7,7 @@ import tn.jallouli.elite.modules.sections.entity.Section;
 
 public interface CourseInterface {
     void createCourse(Long idInstructor, CourseRequest courseRequest);
-    void updateCourse(Long idOldCourse,Course course);
+    void updateCourse(Long idOldCourse,CourseRequest course);
     void deleteCourse(Long idCourse);
 
 

@@ -29,34 +29,40 @@ public class CourseServiceImpl implements CourseInterface {
 
     @Override
     public void createCourse(Long idInstructor, CourseRequest courseRequest) {
-
         UserEntity instructor = userRepo.findById(idInstructor)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Instructor not found with id: " + idInstructor));
         Course c = courseMapper.toEntity(courseRequest);
         c.setInstructor(instructor);
-        if(courseRequest.getSections().isEmpty()){
-            throw new ResourceNotFoundException("Course must have at least one section");
-        }
-        for (SectionRequest sectionRequest : courseRequest.getSections()) {
-            Section s = sectionMapper.toEntity(sectionRequest);
-
-            for (LessonRequest lessonRequest : sectionRequest.getLessons()) {
-
-                Lesson l = lessonMapper.toEntity(lessonRequest);
-                l.setSection(s);
-                s.getLessons().add(l);
+        if (courseRequest.getSections() != null && !courseRequest.getSections().isEmpty()) {
+            for (SectionRequest sectionRequest : courseRequest.getSections()) {
+                Section s = sectionMapper.toEntity(sectionRequest);
+                if (sectionRequest.getLessons() != null) {
+                    for (LessonRequest lessonRequest : sectionRequest.getLessons()) {
+                        Lesson l = lessonMapper.toEntity(lessonRequest);
+                        l.setSection(s);
+                        s.getLessons().add(l);
+                    }
+                }
+                s.setCourse(c);
+                c.getSections().add(s);
             }
-            s.setCourse(c);
-            c.getSections().add(s);
         }
         courseRepo.save(c);
     }
 
     @Override
-    public void updateCourse(Long idOldCourse, Course course) {
-        //Course c = courseRepo.findById(idOldCourse)
+    public void updateCourse(Long idOldCourse, CourseRequest course) {
+        Course c = courseRepo.findById(idOldCourse).orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + idOldCourse));
+        if(course.getTitle() != null) c.setTitle(course.getTitle());
+        if(course.getDescription() != null) c.setDescription(course.getDescription());
+        if(course.getPrice() != null) c.setPrice(course.getPrice());
+        if(course.getLevel() != null) c.setLevel(course.getLevel());
+        if(course.getDuration() != null) c.setDuration(course.getDuration());
+        if(course.getPublished() != null) c.setPublished(course.getPublished());
+        if(course.getThumbnail() != null) c.setThumbnail(course.getThumbnail());
+        courseRepo.save(c);
     }
 
     @Override
